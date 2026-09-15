@@ -1,0 +1,149 @@
+<Window x:Class="Fontys_ICT_block_1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Fontys_ICT_block_1"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="800">
+
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop x:Name="TopGradientStop" Color="#F5F5F4" Offset="0"/>
+            <GradientStop x:Name="BottomGradientStop" Color="#DADADA" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+
+    <!--
+        Loops the background between green and gray forever: the two
+        GradientStops swap colors back and forth (AutoReverse) on repeat.
+        Starts as soon as the window loads, no code-behind needed.
+    -->
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <ColorAnimation Storyboard.TargetName="TopGradientStop"
+                                    Storyboard.TargetProperty="Color"
+                                    From="#F5F5F4" To="#DADADA"
+                                    Duration="0:0:3"
+                                    AutoReverse="True"
+                                    RepeatBehavior="Forever"/>
+                    <ColorAnimation Storyboard.TargetName="BottomGradientStop"
+                                    Storyboard.TargetProperty="Color"
+                                    From="#DADADA" To="#F5F5F4"
+                                    Duration="0:0:3"
+                                    AutoReverse="True"
+                                    RepeatBehavior="Forever"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+
+
+
+    <StackPanel Margin="20" Orientation="Vertical">
+
+        <!-- Title -->
+        <TextBlock Text="Blackjack"
+                   FontSize="50"
+                   FontWeight="Bold"
+                   HorizontalAlignment="center"
+                   Margin="0,0,0,20" 
+                   />
+
+  
+        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="input:"
+                   FontSize="12"
+                   VerticalAlignment="Center"
+                   Margin="0,0,10,0"/>
+
+                <TextBox x:Name="NameTextBox"
+                 Width="120"
+                 BorderBrush="Black"
+                 PreviewTextInput="NameTextBox_PreviewTextInput"/>
+            </StackPanel>
+
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Balance:"
+                   FontSize="12"
+                   VerticalAlignment="Center"
+                   Margin="0,0,10,0"/>
+
+                <TextBlock x:Name="balanceTextBlock"
+                   Text=":"
+                   FontSize="12"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+
+        </StackPanel>
+
+           <StackPanel Orientation="vertical" Margin="0,0,0,0" HorizontalAlignment="right">
+            <Button x:Name="DealButton"
+                    Content="Deal!"
+                    Width="100"
+                    Margin="0,0,0,10"
+                    Click="DealButton_Click"
+                    Background="Green"/>
+
+            <Button x:Name="HitButton"
+                    Content="Hit"
+                    Width="100"
+                    Margin="0,0,0,10"
+                    Click="HitButton_Click"
+                    Background="DarkOrange"
+                    IsEnabled="false"/>
+
+            <Button x:Name="StandButton"
+                    Content="Stand"
+                    Width="100"
+                    Click="StandButton_Click"
+                    Background="Red"
+                    IsEnabled="false"/>
+               
+               
+        </StackPanel>
+        <TextBlock x:Name="ResultTextBlock"
+                   Text=""
+                   FontSize="32"
+                   FontWeight="Bold"
+                   TextWrapping="Wrap"
+                   />
+
+    
+        <TextBlock x:Name="OutputTextBlock"
+                   Text=""
+                   FontSize="14"
+                   FontWeight="Bold"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Left"/>
+
+        <TextBlock x:Name="TotalValueTextBlock"
+                   Text=""
+                   FontSize="14"
+                   FontWeight="Bold"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Left"/>
+
+        <TextBlock x:Name="DealerTextBlock"
+                   Text=""
+                   FontSize="14"
+                   FontWeight="Bold"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Left"
+                   Margin="0,10,0,0"/>
+
+        <TextBlock x:Name="DealerTotalValueTextBlock"
+                   Text=""
+                   FontSize="14"
+                   FontWeight="Bold"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Left"/>
+
+    </StackPanel>
+</Window>
