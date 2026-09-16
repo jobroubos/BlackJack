@@ -10,19 +10,12 @@ namespace Fontys_ICT_block_1
     {
         // All cards currently in the player's hand (starting two, plus any hits).
         private List<Card> playerCards = new List<Card>();
+
+        // All cards currently in the dealer's hand. While the round is
+        // still in progress, card[1] (the "hole card") is rendered face
+        // down - see RenderDealerHand.
         private List<Card> dealerCards = new List<Card>();
-        private Card? dealerCard1;
-        private Card? dealerCard2;
         private int dealerTotalValue;
-
-
-        public MainWindow()
-        {
-
-            InitializeComponent();
-            // show initial balance
-            balanceTextBlock.Text = balance.ToString();
-        }
 
         int balance = 1000;
 
@@ -33,6 +26,14 @@ namespace Fontys_ICT_block_1
         // to parse.
         int currentBet;
 
+        public MainWindow()
+        {
+
+            InitializeComponent();
+            // show initial balance
+            balanceTextBlock.Text = balance.ToString();
+        }
+
         // Blocks any character that isn't a digit before it even reaches
         // the TextBox, so NameTextBox only ever contains numbers.
         private void NameTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -40,12 +41,39 @@ namespace Fontys_ICT_block_1
             e.Handled = !e.Text.All(char.IsDigit);
         }
 
-        // Plays out the dealer's turn: keeps drawing while
-        // Methods.DealerExtraCard says the dealer's total is still under
-        // 17, adding each card to dealerCards and updating the total, then
-        // refreshes the dealer TextBlocks. Without the loop and without
-        // actually using the returned Card, DealerExtraCard's result was
-        // just being discarded and the dealer never grew a hand.
+        // Redraws the player's hand as actual CardControl cards.
+        private void RenderPlayerHand()
+        {
+            PlayerCardsPanel.Children.Clear();
+            foreach (Card card in playerCards)
+            {
+                PlayerCardsPanel.Children.Add(new CardControl(card));
+            }
+        }
+
+        // Redraws the dealer's hand. While revealHoleCard is false, the
+        // second card is shown face down and the running total is hidden,
+        // since a real player wouldn't know it yet either.
+        private void RenderDealerHand(bool revealHoleCard)
+        {
+            DealerCardsPanel.Children.Clear();
+            for (int i = 0; i < dealerCards.Count; i++)
+            {
+                bool isHiddenHoleCard = !revealHoleCard && i == 1;
+                DealerCardsPanel.Children.Add(isHiddenHoleCard
+                    ? CardControl.CreateFaceDown()
+                    : new CardControl(dealerCards[i]));
+            }
+
+            DealerTotalValueTextBlock.Text = revealHoleCard
+                ? $"Dealer's total value: {dealerTotalValue}."
+                : string.Empty;
+        }
+
+        // Plays out the dealer's turn: keeps drawing while the dealer's
+        // total is still under 17, adding each card to dealerCards and
+        // updating the total. Call RenderDealerHand(true) afterwards to
+        // show the result.
         private void PlayDealerHand()
         {
             Card? extraCard;
@@ -54,9 +82,6 @@ namespace Fontys_ICT_block_1
                 dealerCards.Add(extraCard);
                 dealerTotalValue += extraCard.Value;
             }
-
-            DealerTextBlock.Text = $"Dealer's cards: {string.Join(", ", dealerCards.Select(c => c.Name))}.";
-            DealerTotalValueTextBlock.Text = $"Dealer's total value: {dealerTotalValue}.";
         }
 
         private void DealButton_Click(object sender, RoutedEventArgs e)
@@ -92,6 +117,8 @@ namespace Fontys_ICT_block_1
             // valid bet, proceed
             else
             {
+                OutputTextBlock.Text = string.Empty;
+
                 // Lock this bet in for the round - Hit/Stand use
                 // currentBet from here on, not the textbox.
                 currentBet = bet;
@@ -110,63 +137,68 @@ namespace Fontys_ICT_block_1
                 playerCards.Add(second);
 
                 int totalValue = playerCards.Sum(c => c.Value);
-                OutputTextBlock.Text = $"Your cards: {string.Join(", ", playerCards.Select(c => c.Name))}.";
+                RenderPlayerHand();
                 TotalValueTextBlock.Text = $"Total value: {totalValue}.";
 
                 //give dealer the cards
-                
-                
                 dealerCards.Clear();
-                (dealerCard1, dealerCard2) = Methods.dealerCards();
-                dealerCards.Add(dealerCard1);
-                dealerCards.Add(dealerCard2);
-                dealerTotalValue = dealerCard1.Value + dealerCard2.Value;
-                DealerTextBlock.Text = $"Dealer's cards: {dealerCard1.Name} and {dealerCard2.Name}.";
-                DealerTotalValueTextBlock.Text = $"Dealer's total value: {dealerTotalValue}.";
+                (Card dealerFirst, Card dealerSecond) = Methods.dealerCards();
+                dealerCards.Add(dealerFirst);
+                dealerCards.Add(dealerSecond);
+                dealerTotalValue = dealerFirst.Value + dealerSecond.Value;
 
-                // The winner isn't decided until the player stands.
-                ResultTextBlock.Text = string.Empty;
+                // Hole card stays face down until the round is decided.
+                RenderDealerHand(revealHoleCard: false);
 
                 if (totalValue > 0)
                 {
                     DealButton.IsEnabled = false;
                 }
-                if (totalValue == 21)
+
+                // Either side getting a natural blackjack on the deal ends
+                // the round immediately - the dealer doesn't get to draw
+                // further cards in that case, only reveal what they have.
+                if (totalValue == 21 || dealerTotalValue == 21)
                 {
                     DealButton.IsEnabled = true;
-                    PlayDealerHand();
+                    HitButton.IsEnabled = false;
+                    StandButton.IsEnabled = false;
+                    RenderDealerHand(revealHoleCard: true);
+
                     var result = Methods.DefineWinner(totalValue, dealerTotalValue);
                     ResultTextBlock.Text = result;
                     // update balance and UI
                     balance = Methods.ChangeBalance.Update(balance, result, bet);
                     balanceTextBlock.Text = balance.ToString();
-                    TotalValueTextBlock.Text = string.Empty;
-                    OutputTextBlock.Text = string.Empty;
                 }
             }
         }
 
         private void HitButton_Click(object sender, RoutedEventArgs e)
         {
-
-
             Card extraCard = Methods.ExtraCard();
             playerCards.Add(extraCard);
 
             int totalValue = playerCards.Sum(c => c.Value);
-            OutputTextBlock.Text = $"Your cards: {string.Join(", ", playerCards.Select(c => c.Name))}.";
+            RenderPlayerHand();
             TotalValueTextBlock.Text = $"Total value: {totalValue}.";
-            // totalValue == 21 and totalValue > 21 are both already covered
-            // by >= 21, so this used to be three separate ifs that all
-            // fired together whenever the round ended here - applying the
-            // balance change two or three times over instead of once. One
-            // if for "the round is over" fixes that.
+
+            // 21 or more (blackjack or bust) ends the round here.
             if (totalValue >= 21)
             {
                 HitButton.IsEnabled = false;
                 StandButton.IsEnabled = false;
                 DealButton.IsEnabled = true;
-                PlayDealerHand();
+
+                // A bust already loses regardless of the dealer's hand, so
+                // there's no need for the dealer to draw any further -
+                // just reveal what they've already got.
+                if (totalValue <= 21)
+                {
+                    PlayDealerHand();
+                }
+                RenderDealerHand(revealHoleCard: true);
+
                 var result = Methods.DefineWinner(totalValue, dealerTotalValue);
                 ResultTextBlock.Text = result;
                 balance = Methods.ChangeBalance.Update(balance, result, currentBet);
@@ -184,15 +216,14 @@ namespace Fontys_ICT_block_1
             // player trigger another balance update on a finished hand.
             HitButton.IsEnabled = false;
             StandButton.IsEnabled = false;
+
             PlayDealerHand();
+            RenderDealerHand(revealHoleCard: true);
+
             var result = Methods.DefineWinner(totalValue, dealerTotalValue);
             ResultTextBlock.Text = result;
             balance = Methods.ChangeBalance.Update(balance, result, currentBet);
             balanceTextBlock.Text = balance.ToString();
-            TotalValueTextBlock.Text = string.Empty;
-            OutputTextBlock.Text = string.Empty;
-
-
         }
     }
 }

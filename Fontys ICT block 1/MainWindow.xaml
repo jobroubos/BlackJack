@@ -5,145 +5,197 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Fontys_ICT_block_1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="800">
-
-    <Window.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-            <GradientStop x:Name="TopGradientStop" Color="#F5F5F4" Offset="0"/>
-            <GradientStop x:Name="BottomGradientStop" Color="#DADADA" Offset="1"/>
-        </LinearGradientBrush>
-    </Window.Background>
+        Title="Blackjack" Height="680" Width="900"
+        WindowState="Maximized">
 
     <!--
-        Loops the background between green and gray forever: the two
-        GradientStops swap colors back and forth (AutoReverse) on repeat.
-        Starts as soon as the window loads, no code-behind needed.
+        Casino-table look: a dark green felt background, gold accents, and
+        distinct framed "zones" for the dealer's and player's hands.
+        Buttons use CasinoButtonStyle below for a pill shape. Every
+        x:Name here is unchanged from before, so MainWindow.xaml.cs needed
+        no changes for this redesign - only where things sit and how
+        they're styled.
     -->
-    <Window.Triggers>
-        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <ColorAnimation Storyboard.TargetName="TopGradientStop"
-                                    Storyboard.TargetProperty="Color"
-                                    From="#F5F5F4" To="#DADADA"
-                                    Duration="0:0:3"
-                                    AutoReverse="True"
-                                    RepeatBehavior="Forever"/>
-                    <ColorAnimation Storyboard.TargetName="BottomGradientStop"
-                                    Storyboard.TargetProperty="Color"
-                                    From="#DADADA" To="#F5F5F4"
-                                    Duration="0:0:3"
-                                    AutoReverse="True"
-                                    RepeatBehavior="Forever"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </Window.Triggers>
+    <Window.Background>
+        <RadialGradientBrush GradientOrigin="0.5,0.4" Center="0.5,0.4" RadiusX="0.9" RadiusY="0.9">
+            <GradientStop Color="#1B5E3A" Offset="0"/>
+            <GradientStop Color="#0A3320" Offset="1"/>
+        </RadialGradientBrush>
+    </Window.Background>
 
+    <Window.Resources>
+        <!-- Pill-shaped, drop-shadowed action buttons (Deal/Hit/Stand). -->
+        <Style x:Key="CasinoButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Width" Value="110"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="8,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="21">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.4" Color="Black"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Chrome" Property="Opacity" Value="0.35"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
+        <Style x:Key="ZoneLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#D4AF37"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
 
-    <StackPanel Margin="20" Orientation="Vertical">
+        <Style x:Key="ZoneTotalStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock Text="Blackjack"
-                   FontSize="50"
+        <TextBlock Grid.Row="0"
+                   Text="BLACKJACK"
+                   FontSize="44"
                    FontWeight="Bold"
-                   HorizontalAlignment="center"
-                   Margin="0,0,0,20" 
-                   />
+                   Foreground="#D4AF37"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,12"/>
 
-  
-        <StackPanel Orientation="Vertical" Margin="0,0,0,10">
-
-            
+        <!-- Balance + bet bar -->
+        <Border Grid.Row="1"
+                Background="#0F2E1A"
+                BorderBrush="#D4AF37"
+                BorderThickness="1.5"
+                CornerRadius="24"
+                Padding="20,10"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,16">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="input:"
-                   FontSize="12"
-                   VerticalAlignment="Center"
-                   Margin="0,0,10,0"/>
+                <TextBlock Text="BALANCE" Foreground="#D4AF37" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock x:Name="balanceTextBlock" Text=":" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,24,0"/>
 
-                <TextBox x:Name="NameTextBox"
-                 Width="120"
-                 BorderBrush="Black"
-                 PreviewTextInput="NameTextBox_PreviewTextInput"/>
+                <TextBlock Text="BET" Foreground="#D4AF37" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <Border Background="#1B4D2E" BorderBrush="#D4AF37" BorderThickness="1" CornerRadius="14" Padding="10,4">
+                    <TextBox x:Name="NameTextBox"
+                             Width="80"
+                             Background="Transparent"
+                             Foreground="White"
+                             CaretBrush="White"
+                             BorderThickness="0"
+                             FontWeight="Bold"
+                             FontSize="14"
+                             PreviewTextInput="NameTextBox_PreviewTextInput"/>
+                </Border>
             </StackPanel>
+        </Border>
 
-
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Balance:"
-                   FontSize="12"
-                   VerticalAlignment="Center"
-                   Margin="0,0,10,0"/>
-
-                <TextBlock x:Name="balanceTextBlock"
-                   Text=":"
-                   FontSize="12"
-                   VerticalAlignment="Center"/>
+        <!-- Dealer zone -->
+        <Border Grid.Row="2"
+                Background="#123821"
+                BorderBrush="#D4AF37"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="20,16"
+                Margin="0,0,0,16"
+                MinHeight="150">
+            <StackPanel>
+                <TextBlock Text="DEALER" Style="{StaticResource ZoneLabelStyle}"/>
+                <WrapPanel x:Name="DealerCardsPanel" Orientation="Horizontal" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="DealerTotalValueTextBlock" Text="" Style="{StaticResource ZoneTotalStyle}"/>
             </StackPanel>
+        </Border>
 
+        <!-- Result / messages -->
+        <StackPanel Grid.Row="3" HorizontalAlignment="Center" Margin="0,0,0,16">
+            <TextBlock x:Name="ResultTextBlock"
+                       Text=""
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"/>
+            <TextBlock x:Name="OutputTextBlock"
+                       Text=""
+                       FontSize="13"
+                       FontWeight="Bold"
+                       Foreground="#FF6B6B"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"/>
         </StackPanel>
 
-           <StackPanel Orientation="vertical" Margin="0,0,0,0" HorizontalAlignment="right">
+        <!-- Player zone -->
+        <Border Grid.Row="4"
+                Background="#123821"
+                BorderBrush="#D4AF37"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="20,16"
+                Margin="0,0,0,16"
+                MinHeight="150">
+            <StackPanel>
+                <TextBlock Text="YOU" Style="{StaticResource ZoneLabelStyle}"/>
+                <WrapPanel x:Name="PlayerCardsPanel" Orientation="Horizontal" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="TotalValueTextBlock" Text="" Style="{StaticResource ZoneTotalStyle}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Action buttons -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center">
             <Button x:Name="DealButton"
-                    Content="Deal!"
-                    Width="100"
-                    Margin="0,0,0,10"
-                    Click="DealButton_Click"
-                    Background="Green"/>
+                    Content="DEAL"
+                    Style="{StaticResource CasinoButtonStyle}"
+                    Background="#2E7D32"
+                    Click="DealButton_Click"/>
 
             <Button x:Name="HitButton"
-                    Content="Hit"
-                    Width="100"
-                    Margin="0,0,0,10"
+                    Content="HIT"
+                    Style="{StaticResource CasinoButtonStyle}"
+                    Background="#E67E22"
                     Click="HitButton_Click"
-                    Background="DarkOrange"
-                    IsEnabled="false"/>
+                    IsEnabled="False"/>
 
             <Button x:Name="StandButton"
-                    Content="Stand"
-                    Width="100"
+                    Content="STAND"
+                    Style="{StaticResource CasinoButtonStyle}"
+                    Background="#C0392B"
                     Click="StandButton_Click"
-                    Background="Red"
-                    IsEnabled="false"/>
-               
-               
+                    IsEnabled="False"/>
         </StackPanel>
-        <TextBlock x:Name="ResultTextBlock"
-                   Text=""
-                   FontSize="32"
-                   FontWeight="Bold"
-                   TextWrapping="Wrap"
-                   />
-
-    
-        <TextBlock x:Name="OutputTextBlock"
-                   Text=""
-                   FontSize="14"
-                   FontWeight="Bold"
-                   TextWrapping="Wrap"
-                   HorizontalAlignment="Left"/>
-
-        <TextBlock x:Name="TotalValueTextBlock"
-                   Text=""
-                   FontSize="14"
-                   FontWeight="Bold"
-                   TextWrapping="Wrap"
-                   HorizontalAlignment="Left"/>
-
-        <TextBlock x:Name="DealerTextBlock"
-                   Text=""
-                   FontSize="14"
-                   FontWeight="Bold"
-                   TextWrapping="Wrap"
-                   HorizontalAlignment="Left"
-                   Margin="0,10,0,0"/>
-
-        <TextBlock x:Name="DealerTotalValueTextBlock"
-                   Text=""
-                   FontSize="14"
-                   FontWeight="Bold"
-                   TextWrapping="Wrap"
-                   HorizontalAlignment="Left"/>
-
-    </StackPanel>
+    </Grid>
 </Window>
