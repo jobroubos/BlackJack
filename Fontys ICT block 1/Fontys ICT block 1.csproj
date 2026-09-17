@@ -9,4 +9,14 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <!--
+    Ad images compiled straight into the assembly (not copied loosely next
+    to the exe), so a published exe has everything it needs on its own -
+    see BonusAdsResourcePrefix in MainWindow.xaml.cs for how they're read
+    back out at runtime.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Ads\**" />
+  </ItemGroup>
+
 </Project>

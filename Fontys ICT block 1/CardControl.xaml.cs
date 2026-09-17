@@ -1,6 +1,8 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Fontys_ICT_block_1
 {
@@ -42,6 +44,26 @@ namespace Fontys_ICT_block_1
             TopRankText.Foreground = suitColor;
             BottomRankText.Foreground = suitColor;
             SuitText.Foreground = suitColor;
+        }
+
+        // Small "deal" animation: fades and scales the card in from
+        // slightly smaller than full size. Call this right after adding
+        // the card to its panel.
+        public void PlayAppearAnimation()
+        {
+            Opacity = 0;
+            var scale = new ScaleTransform(0.7, 0.7);
+            RenderTransform = scale;
+            RenderTransformOrigin = new Point(0.5, 0.5);
+
+            BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(200)));
+
+            var scaleUp = new DoubleAnimation(0.7, 1, TimeSpan.FromMilliseconds(200))
+            {
+                EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+            };
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleUp);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleUp);
         }
     }
 }
